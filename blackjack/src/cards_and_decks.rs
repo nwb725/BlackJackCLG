@@ -87,8 +87,7 @@ impl CardType {
 pub struct Card {
     pub color: CardColor,
     pub value: CardType, 
-    empty: bool,
-    face_down: bool
+    pub face_down: bool
 }
 
 impl Card {
@@ -96,7 +95,6 @@ impl Card {
         Self {
             color: c,
             value: val,
-            empty: false,
             face_down: false
         }
     }
@@ -105,7 +103,6 @@ impl Card {
         Self {
             color: CardColor::Empty,
             value: CardType::Empty,
-            empty: true,
             face_down: false,
         }
     }
@@ -135,7 +132,7 @@ impl Card {
 }
 
 pub struct Deck {
-    cards: Vec<Card>,
+    pub cards: Vec<Card>,
 }
 
 impl Deck {

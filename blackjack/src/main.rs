@@ -129,6 +129,8 @@ impl Game {
 
         game.dealer.hit(&mut game.deck);
         game.dealer.hit(&mut game.deck); 
+
+        game.dealer.hand[1].face_down = true;
         
 
 
@@ -149,6 +151,7 @@ impl Game {
         if self.player.is_bust() || self.player.has_blackjack() || self.dealer.has_blackjack() {
             return;
         }
+        self.dealer.hand[1].face_down = false;
 
         loop {
             if self.dealer.hand_value > BLACKJACK {
@@ -206,6 +209,7 @@ fn main() {
             println!("\nEnter your move!");
             println!("(1) Hit");
             println!("(2) Stand");
+            println!("(3) Exit");
             match handle.read_line(&mut input) {
                 Ok(0) => return, // EOF detected, exit the program, otherwise the dealer plays.
                 Ok(_) => {
@@ -227,7 +231,8 @@ fn main() {
                     }
                 },
                 2 => { g.player.stand(); break;},
-                _ => (),
+                3 => return,
+                _ => ()
             }
         }
         g.dealer_play();
