@@ -20,7 +20,7 @@
     };
     apps.${system}.default = {
        type = "app";
-       program = "$packages.${system}.default}/bin/blackjack";
+       program = "${self.packages.${system}.default}/bin/blackjack";
     };
   };
 }
