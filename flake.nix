@@ -11,7 +11,7 @@
     pkgs = import nixpkgs { inherit system; };
   in {
     packages.${system}.default = pkgs.rustPlatform.buildRustPackage {
-      pname = "blackjack";
+      pname = "BLACKJACKCLG";
       version = "1.0.0";
       src = ./.;
       cargoLock = {
