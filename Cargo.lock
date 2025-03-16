@@ -3,7 +3,7 @@
 version = 3
 
 [[package]]
-name = "BLACKJACKCLG"
+name = "blackjack"
 version = "0.1.0"
 dependencies = [
  "rand",
