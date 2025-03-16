@@ -1,22 +1,21 @@
 {
-  description = "A terminal-based Blackjack game in Rust";
+  description = "Blackjack Game";
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-22.11"; # Choose the appropriate nixpkgs version
+    flake-utils.url = "github:numtide/flake-utils";
   };
 
-  outputs = { self, nixpkgs }: 
-  let
-    system = "x86_64-linux";  # Change to `aarch64-linux` for ARM (e.g., Apple M1/M2)
-    pkgs = import nixpkgs { inherit system; };
+  outputs = { self, nixpkgs, flake-utils, ... }: flake-utils.lib.eachSystem ["x86_64-linux"] (system: let
+    pkgs = nixpkgs.legacyPackages.${system};
   in {
-    packages.${system}.default = pkgs.rustPlatform.buildRustPackage {
+    packages.blackjack = pkgs.buildRustPackage rec {
       pname = "blackjack";
-      version = "1.0.0";
-      src = ./.;
-      cargoLock = {
-        lockFile = ./Cargo.lock;
-      };
+      version = "1.0.0";  # Specify your version here
+
+      src = self.path + "/blackjack";  # Point to the blackjack directory containing Cargo.toml
+
+      # If you have any other specific build settings, configure them here
     };
-  };
+  });
 }
