@@ -2,7 +2,7 @@
   description = "Blackjack Game";
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-22.11"; # Choose the appropriate nixpkgs version
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-22.11";  # Adjust as needed
     flake-utils.url = "github:numtide/flake-utils";
   };
 
@@ -11,11 +11,10 @@
   in {
     packages.blackjack = pkgs.buildRustPackage rec {
       pname = "blackjack";
-      version = "1.0.0";  # Specify your version here
+      version = "1.0.0";  # Adjust as needed
 
-      src = self.path + "/blackjack";  # Point to the blackjack directory containing Cargo.toml
-
-      # If you have any other specific build settings, configure them here
+      # Now point to the root directory
+      src = self.path;  # Points to the root of the repo, which now contains Cargo.toml and Cargo.lock
     };
   });
 }
