@@ -18,6 +18,10 @@
         lockFile = ./Cargo.lock;
       };
     };
+    apps.${system}.default = {
+       type = "app";
+       program = "$packages.${system}.default}/bin/blackjack";
+    };
   };
 }
 
