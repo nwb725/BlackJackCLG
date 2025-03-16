@@ -1,1 +1,1 @@
-/home/malte/Desktop/BlackJackCLG/blackjack/target/debug/blackjack: /home/malte/Desktop/BlackJackCLG/blackjack/src/cards_and_decks.rs /home/malte/Desktop/BlackJackCLG/blackjack/src/main.rs /home/malte/Desktop/BlackJackCLG/blackjack/src/pretty_printer.rs
+/home/malte/Desktop/BlackJackCLG/target/debug/blackjack: /home/malte/Desktop/BlackJackCLG/src/cards_and_decks.rs /home/malte/Desktop/BlackJackCLG/src/main.rs /home/malte/Desktop/BlackJackCLG/src/pretty_printer.rs
