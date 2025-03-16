@@ -11,7 +11,7 @@
     pkgs = import nixpkgs { inherit system; };
   in {
     packages.${system}.default = pkgs.rustPlatform.buildRustPackage {
-      pname = "BLACKJACKCLG";
+      pname = "blackjack";
       version = "1.0.0";
       src = ./.;
       cargoLock = {
@@ -20,7 +20,7 @@
     };
     apps.${system}.default = {
        type = "app";
-       program = "${self.packages.${system}.default}/bin/BLACKJACKCLG";
+       program = "${self.packages.${system}.default}/bin/blackjack";
     };
   };
 }
