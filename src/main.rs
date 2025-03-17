@@ -50,15 +50,6 @@ impl Player {
         else { false }
     }
 
-    fn set_player_value(&mut self) {
-        // Sets the players value to the current value
-        let mut sum = 0;
-        for i in &self.hand {
-            sum += i.get_value()
-        }
-        self.hand_value = sum;
-    }
-
     fn get_player_cards(&self) -> Vec<Card> {
         let mut r = Vec::new();
         for i in 0..self.hand_count {
@@ -67,14 +58,33 @@ impl Player {
         r
     }
 
-    fn hit(&mut self, deck: &mut Deck) {
+    fn hit(&mut self, deck: &mut Deck, is_dealer: bool) {
         // This is called wheneve
         // Grabs the top card of the deck, add to the hand, 
         // and checks what 'kind' of hand the player has.
         let card = deck.take_card();
         self.hand[self.hand_count] = card;
         self.hand_count += 1;
-        self.set_player_value();
+
+
+        match card.value {
+            CardType::Ace => {
+                if is_dealer {
+                    if 17 <= (self.hand_value + 11) && (self.hand_value + 11) < 21 {
+                        self.hand_value += card.get_value(true)
+                    } else {
+                        self.hand_value += card.get_value(false)
+                    }
+                } else {
+                    if (self.hand_value + 11) <= BLACKJACK {
+                        self.hand_value += card.get_value(true)
+                    } else {
+                        self.hand_value += card.get_value(false)
+                    }
+                }
+            }
+            _=> { self.hand_value += card.get_value(false) }
+        }
 
         // Should never be above max hand.
         if self.hand_count == MAX_HAND {
@@ -94,7 +104,6 @@ impl Player {
 
         // Should imply that the player is done,
         // And the dealer should finish.
-        self.set_player_value();
         self.is_standing = true;
     }
 
@@ -124,11 +133,11 @@ impl Game {
     fn start() -> Self {
         let mut game = Game::new();
 
-        game.player.hit(&mut game.deck);
-        game.player.hit(&mut game.deck);
+        game.player.hit(&mut game.deck, false);
+        game.player.hit(&mut game.deck, false);
 
-        game.dealer.hit(&mut game.deck);
-        game.dealer.hit(&mut game.deck); 
+        game.dealer.hit(&mut game.deck, true);
+        game.dealer.hit(&mut game.deck, true); 
 
         game.dealer.hand[1].face_down = true;
         
@@ -164,7 +173,7 @@ impl Game {
                 break;
             }
 
-            self.dealer.hit(&mut self.deck);
+            self.dealer.hit(&mut self.deck, true);
         }
     }
 
@@ -223,7 +232,7 @@ fn main() {
             }
             match command {
                 1 => { 
-                    g.player.hit(&mut g.deck); 
+                    g.player.hit(&mut g.deck, false); 
                     g.player.hand[g.player.hand_count-1].print_card();
                     if g.player.is_bust() {
                         // Dealers turn.

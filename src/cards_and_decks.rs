@@ -116,9 +116,9 @@ impl Card {
         self.value = value;
     }
 
-    pub fn get_value(&self) -> u8 {
+    pub fn get_value(&self, ace: bool) -> u8 {
         // Gets the value of the card
-        self.value.to_value(true)
+        self.value.to_value(ace)
 
     }
 
