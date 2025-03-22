@@ -5,7 +5,7 @@ use cards_and_decks::*;
 use core::time;
 use std::io::BufRead;
 
-const MAX_HAND: usize = 8;
+const MAX_HAND: usize = 10;
 const MAX_DEALER_HAND_VALUE: u8 = 17;
 const BLACKJACK: u8 = 21;
 
@@ -20,42 +20,29 @@ enum Result {
 struct Player {
     // I believe the theoritical limit of hand size is 8
     // Might need to double check that later... :)
-    hand: [Card; MAX_HAND],
+    hand: [Card; MAX_HAND*2],
     hand_count: usize,
     hand_value: u8,
     is_standing: bool,
     is_bust: bool,
+    is_split: bool,
 }
 
 impl Player {
     fn new() -> Self {
         // New player with an empty hand.
         Self {
-            hand: [Card::new_empty(); MAX_HAND],
+            hand: [Card::new_empty(); MAX_HAND*2],
             hand_count: 0,
             hand_value: 0,
             is_standing: false,
             is_bust: false,
+            is_split: false,
         }
-    }
-
-    fn is_bust(&self) -> bool {
-        self.is_bust
     }
 
     fn has_blackjack(&self) -> bool {
-        if self.hand_count == 2 && self.hand_value == BLACKJACK {
-            true
-        }
-        else { false }
-    }
-
-    fn get_player_cards(&self) -> Vec<Card> {
-        let mut r = Vec::new();
-        for i in 0..self.hand_count {
-            r.push(self.hand[i]);
-        }
-        r
+        self.hand_count == 2 && self.hand_value == BLACKJACK 
     }
 
     fn hit(&mut self, deck: &mut Deck, is_dealer: bool) {
@@ -107,10 +94,22 @@ impl Player {
         self.is_standing = true;
     }
 
-    #[warn(dead_code)]
-    fn split() {
+    fn can_split(&self) -> bool {
+        self.hand_count == 2 && self.hand[0] == self.hand[1] 
+    }
+
+    #[allow(dead_code)]
+    fn split(&mut self) {
         // TODO: Make it so the player can split their hand.
-        // Need to look at the rules.
+        // Only possible if first 2 cards a identical.
+
+        // should only ever be allowed at the beginning.
+        // If this fails, then look at can_split.
+        assert_eq!(self.hand_count, 2);
+
+        self.is_split = true;
+        self.hand[MAX_HAND] = self.hand[1];
+        self.hand[1] = Card::new_empty();
         todo!()
     }
 }
@@ -123,41 +122,38 @@ struct Game {
 
 impl Game {
     fn new() -> Self {
+        let d = Deck::new(4);
+        /* 
+        To test split
+        d.cards[0] = Card::new(CardColor::Diamond, CardType::King);
+        d.cards[2] = Card::new(CardColor::Clover, CardType::King); 
+        */
         Self {
             player: Player::new(),
             dealer: Player::new(),
-            deck:   Deck::new(4),
+            // 4 decks, can change
+            deck:   d,
         }
     }
 
     fn start() -> Self {
         let mut game = Game::new();
 
-        game.player.hit(&mut game.deck, false);
-        game.player.hit(&mut game.deck, false);
 
+        // Mixed starting order as in the real game.
+        game.player.hit(&mut game.deck, false);
         game.dealer.hit(&mut game.deck, true);
-        game.dealer.hit(&mut game.deck, true); 
+
+        game.player.hit(&mut game.deck, false);
+        game.dealer.hit(&mut game.deck, true);
 
         game.dealer.hand[1].face_down = true;
-        
-
-
-        println!("INITAL DEALER CARDS");
-        for i in game.dealer.get_player_cards() {
-            i.print_card();
-        }
-
-        println!("INITIAL PLAYER CARDS");
-        for i in game.player.get_player_cards() {
-            i.print_card();
-        }
 
         game
     }
 
     fn dealer_play(&mut self) {
-        if self.player.is_bust() || self.player.has_blackjack() || self.dealer.has_blackjack() {
+        if self.player.is_bust || self.player.has_blackjack() || self.dealer.has_blackjack() {
             return;
         }
         self.dealer.hand[1].face_down = false;
@@ -178,7 +174,7 @@ impl Game {
     }
 
     fn check_winner(&mut self) -> Option<Result> {
-        if self.player.is_bust() {
+        if self.player.is_bust {
             return Some(Result::DealerWin)
         }
         if self.player.has_blackjack() && !self.dealer.has_blackjack() {
@@ -190,7 +186,7 @@ impl Game {
         if self.dealer.has_blackjack() {
             return Some(Result::DealerWin);
         }
-        if self.dealer.is_bust() || self.player.hand_value > self.dealer.hand_value {
+        if self.dealer.is_bust || self.player.hand_value > self.dealer.hand_value {
             return Some(Result::PlayerWin)
         }
         if self.player.hand_value == self.dealer.hand_value {
@@ -218,12 +214,13 @@ fn main() {
             println!("\nEnter your move!");
             println!("(1) Hit");
             println!("(2) Stand");
-            println!("(3) Exit");
+            if g.player.can_split() { println!("(3) Split") }
+            println!("(4) Exit");
             match handle.read_line(&mut input) {
                 Ok(0) => return, // EOF detected, exit the program, otherwise the dealer plays.
                 Ok(_) => {
                     // Parse command as u8, for now assume that user is perfekt :)
-                    command = input.trim().parse::<u8>().expect("User was WRONG FIX!")
+                    command = input.trim().parse::<u8>().unwrap_or(100)
                 }
                 Err(err) => {
                     eprintln!("Error reading input: {}", err);
@@ -234,14 +231,19 @@ fn main() {
                 1 => { 
                     g.player.hit(&mut g.deck, false); 
                     g.player.hand[g.player.hand_count-1].print_card();
-                    if g.player.is_bust() {
+                    if g.player.is_bust {
                         // Dealers turn.
                         break;
                     }
                 },
                 2 => { g.player.stand(); break;},
-                3 => return,
-                _ => ()
+                3 => { if g.player.can_split() { 
+                    // Do the split stuff
+                    g.player.split();
+                }},  
+                4 => return,
+                100 => (), // Unkown command, nothing happens, Might need to give message later.
+                _ => panic!("Panic: Something went very wrong parsing the command.")
             }
         }
         g.dealer_play();

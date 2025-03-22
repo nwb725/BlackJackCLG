@@ -1,16 +1,6 @@
 use crate::{Game, Player};
 use std::io::Write;
 
-fn pp_upsidedown() {
-    println!("+------+");
-    println!("|+    +|");
-    println!("| +  + |");
-    println!("|  ++  |");
-    println!("| +  + |");
-    println!("|+    +|");
-    print!("+------+");
-}
-
 fn pp_cards(p: &Player) {
     for _ in 0..p.hand_count {
         print!("+------+");

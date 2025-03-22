@@ -2,6 +2,7 @@ use rand::seq::SliceRandom;
 use strum::IntoEnumIterator;
 use strum_macros::EnumIter;
 use rand::thread_rng;
+use std::collections::VecDeque;
 
 #[derive(EnumIter, Clone, Copy, PartialEq)]
 pub enum CardColor {
@@ -90,6 +91,13 @@ pub struct Card {
     pub face_down: bool
 }
 
+// For comparing exact cards, used for 'split'.
+impl PartialEq for Card {
+    fn eq(&self, other: &Self) -> bool {
+        self.value == other.value
+    }
+}
+
 impl Card {
     pub fn new(c: CardColor, val: CardType) -> Self {
         Self {
@@ -132,7 +140,7 @@ impl Card {
 }
 
 pub struct Deck {
-    pub cards: Vec<Card>,
+    pub cards: VecDeque<Card>,
 }
 
 impl Deck {
@@ -140,21 +148,23 @@ impl Deck {
         // In BlackJack you usually play with 4 decks of cards.
         // For extendability, we can specify how many decks we want: num_decks*52.
         // Then we want to randomly shuffle it.
-        let mut deck: Vec<Card> = Vec::new();
+        let mut deck: VecDeque<Card> = VecDeque::new();
         let mut current_card = Card::new(CardColor::Clubs, CardType::Ace);
         for value in CardType::iter() {
             for color in CardColor::iter() {
                 if value != CardType::Empty && color != CardColor::Empty {
                     for _ in 0..num_decks {
                         current_card.overwrite_card(color, value);
-                        deck.push(current_card);
+                        deck.push_back(current_card);
                     }
                 }
             }
         }
 
         let mut rng = thread_rng();
-        deck.shuffle(&mut rng);
+        let mut to_shuffle: Vec<Card> = deck.into();
+        to_shuffle.shuffle(&mut rng);
+        deck = VecDeque::from(to_shuffle);
 
         Self {
             cards: deck,
@@ -162,16 +172,10 @@ impl Deck {
     }
 
     pub fn take_card(&mut self) -> Card {
-        let c = self.cards.pop();
+        let c = self.cards.pop_front();
         match c {
             Some(card) => card,
             None       => Card::new_empty()
-        }
-    }
-
-    pub fn print_deck(&self) {
-        for card in &self.cards {
-            card.print_card();
         }
     }
 
